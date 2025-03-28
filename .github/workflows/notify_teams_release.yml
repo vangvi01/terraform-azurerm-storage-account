@@ -1,0 +1,29 @@
+name: Notify Teams on Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        team: [HR]
+      fail-fast: false  # Continue with other teams if one fails
+    
+    steps:
+      - name: Send notification to ${{ matrix.team }} team
+        uses: aliencube/microsoft-teams-actions@v0.8.0
+        with:
+          webhook_uri: ${{ secrets[format('{0}_TEAMS_WEBHOOK_URL', matrix.team)] }}
+          title: "New Release Created"
+          summary: "A new release has been created"
+          text: |
+            ## New Release: ${{ github.event.release.tag_name }}
+            
+            **Name**: ${{ github.event.release.name }}
+            **Created by**: ${{ github.event.release.author.login }}
+            **Release URL**: ${{ github.event.release.html_url }}
+            
+            ${{ github.event.release.body }}
